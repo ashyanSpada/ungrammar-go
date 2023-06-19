@@ -15,6 +15,7 @@ const (
 	KIND_LPAREN
 	KIND_RPAREN
 	KIND_EOF
+	KIND_INVALID
 )
 
 type Token struct {
@@ -43,8 +44,8 @@ func Advance(input *string) Token {
 		}
 	}
 	*input = (*input)[1:]
-	var token Token
-	switch (*input)[0] {
+	b := (*input)[0]
+	switch b {
 	case '=':
 		return Token{
 			Kind: KIND_EQ,
@@ -74,11 +75,53 @@ func Advance(input *string) Token {
 			Kind: KIND_COLON,
 		}
 	case '\'':
-		var s []byte
+		var buf []byte
+	loop:
 		for {
-
+			nextByte := next(input)
+			if nextByte == nil {
+				return Token{
+					Kind: KIND_INVALID,
+				}
+			}
+			switch *nextByte {
+			case '\\':
+			case '\'':
+				break loop
+			default:
+				buf = append(buf, *nextByte)
+			}
+		}
+		return Token{
+			Kind:  KIND_TOKEN,
+			Value: string(buf),
+		}
+	default:
+		if isIdent(b) {
+			var buf []byte
+			buf = append(buf, b)
+			for nextByte := next(input); nextByte != nil && isIdent(*nextByte); nextByte = next(input) {
+				buf = append(buf, *nextByte)
+			}
+			return Token{
+				Kind:  KIND_NODE,
+				Value: string(buf),
+			}
+		} else {
+			return Token{
+				Kind: KIND_INVALID,
+			}
 		}
 	}
+}
+
+func next(s *string) *byte {
+	if s == nil || len(*s) == 0 {
+		return nil
+	}
+	b := (*s)[0]
+	*s = (*s)[1:]
+	return &b
 }
 
 func isEscapable(b byte) bool {
