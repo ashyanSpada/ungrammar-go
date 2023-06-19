@@ -86,6 +86,13 @@ func Advance(input *string) Token {
 			}
 			switch *nextByte {
 			case '\\':
+				nextByte = next(input)
+				if nextByte == nil {
+					return Token{
+						Kind: KIND_INVALID,
+					}
+				}
+				buf = append(buf, *nextByte)
 			case '\'':
 				break loop
 			default:
