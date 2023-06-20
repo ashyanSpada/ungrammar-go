@@ -1,6 +1,9 @@
 package ungrammar
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 type Kind uint
 
@@ -18,10 +21,47 @@ const (
 	KIND_INVALID
 )
 
+func (k Kind) String() string {
+	switch k {
+	case KIND_NODE:
+		return "Node"
+	case KIND_TOKEN:
+		return "Token"
+	case KIND_EQ:
+		return "="
+	case KIND_STAR:
+		return "*"
+	case KIND_PIPE:
+		return "|"
+	case KIND_QMARK:
+		return "?"
+	case KIND_COLON:
+		return ":"
+	case KIND_LPAREN:
+		return "("
+	case KIND_RPAREN:
+		return ")"
+	case KIND_EOF:
+		return "EOF"
+	case KIND_INVALID:
+		return "INVALID"
+	default:
+		return "UNKNOWN"
+	}
+}
+
 type Token struct {
-	Kind  Kind
-	Loc   Location
+	Kind Kind
+	// Loc   Location
 	Value string
+}
+
+func (t Token) String() string {
+	return fmt.Sprintf("Kind: %s: %s", t.Kind.String(), t.Value)
+}
+
+func (t Token) IsValid() bool {
+	return t.Kind != KIND_EOF && t.Kind != KIND_INVALID
 }
 
 type Location struct {
@@ -37,13 +77,30 @@ func (l Location) Advance(input string) {
 	l.Line += 1
 }
 
+func Tokenize(input string) []Token {
+	var ans []Token
+	for input != "" {
+		skipWhiteSpace(&input)
+		skipComment(&input)
+		// fmt.Println(input)
+		token := Advance(&input)
+		fmt.Println(token)
+		if token.IsValid() {
+
+			ans = append(ans, token)
+		} else {
+			break
+		}
+	}
+	return ans
+}
+
 func Advance(input *string) Token {
 	if input == nil || len(*input) == 0 {
 		return Token{
 			Kind: KIND_EOF,
 		}
 	}
-	*input = (*input)[1:]
 	b := (*input)[0]
 	switch b {
 	case '=':
@@ -126,8 +183,11 @@ func next(s *string) *byte {
 	if s == nil || len(*s) == 0 {
 		return nil
 	}
-	b := (*s)[0]
 	*s = (*s)[1:]
+	if len(*s) == 0 {
+		return nil
+	}
+	b := (*s)[0]
 	return &b
 }
 
