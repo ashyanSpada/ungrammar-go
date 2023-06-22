@@ -26,21 +26,23 @@ func (g Grammar) Token(token RuleToken) TokenData {
 	return g.tokens[token]
 }
 
+type LabelRule struct {
+	Label string
+	Rule  Rule
+}
+
 type Rule struct {
-	Labeled *struct {
-		Label string
-		Rule  Rule
-	}
-	Node  *RuleNode
-	Token *RuleToken
-	Seq   []Rule
-	Alt   *Rule
-	Opt   *Rule
-	Req   *Rule
+	Labeled *LabelRule
+	Node    *RuleNode
+	Token   *RuleToken
+	Seq     []Rule
+	Alt     []Rule
+	Opt     *Rule
+	Rep     *Rule
 }
 
 func (r Rule) IsDummy() bool {
-	return r.Labeled == nil && r.Node == nil && r.Token == nil && r.Seq == nil && r.Alt == nil && r.Opt == nil && r.Req == nil
+	return r.Labeled == nil && r.Node == nil && r.Token == nil && r.Seq == nil && r.Alt == nil && r.Opt == nil && r.Rep == nil
 }
 
 var DUMMY_RULE = Rule{}

@@ -5,6 +5,22 @@ import (
 	"fmt"
 )
 
+func Parse(tokens []Token) (*Grammar, error) {
+	parser := NewParser(tokens)
+	for !parser.isEOF() {
+		node(parser)
+	}
+	return parser.finish()
+}
+
+func NewParser(tokens []Token) *Parser {
+	return &Parser{
+		tokens:     tokens,
+		nodeTable:  make(map[string]RuleNode),
+		tokenTable: make(map[string]RuleToken),
+	}
+}
+
 type Parser struct {
 	grammar    Grammar
 	tokens     []Token
@@ -47,13 +63,13 @@ func (p *Parser) isEOF() bool {
 	return len(p.tokens) == 0
 }
 
-func (p *Parser) finish() error {
-	for _, nodeData := range p.grammar.nodes {
-		if nodeData.Rule.IsDummy() {
-			return fmt.Errorf("unexpected node: %s", nodeData.Name)
-		}
-	}
-	return nil
+func (p *Parser) finish() (*Grammar, error) {
+	// for _, nodeData := range p.grammar.nodes {
+	// 	// if nodeData.Rule.IsDummy() {
+	// 	// 	return nil, fmt.Errorf("unexpected node: %s", nodeData.Name)
+	// 	// }
+	// }
+	return &p.grammar, nil
 }
 
 func (p *Parser) internNode(name string) RuleNode {
@@ -79,7 +95,7 @@ func (p *Parser) internToken(name string) RuleToken {
 	return token
 }
 
-func (p *Parser) node() error {
+func node(p *Parser) error {
 	token, err := p.bump()
 	if err != nil {
 		return err
@@ -95,10 +111,10 @@ func (p *Parser) node() error {
 	}
 
 	if !p.grammar.Node(node).Rule.IsDummy() {
-		return fmt.Errorf("duplicate rule: {}", p.grammar.Node(node).Name)
+		return fmt.Errorf("duplicate rule: %s", p.grammar.Node(node).Name)
 	}
 
-	rule, err := p.rule()
+	rule, err := rule(p)
 	if err != nil {
 		return err
 	}
@@ -106,10 +122,136 @@ func (p *Parser) node() error {
 	return nil
 }
 
-func (p *Parser) rule() (*Rule, error) {
+func rule(p *Parser) (*Rule, error) {
 	token := p.peek()
 	if token == nil {
 		return nil, errors.New("empty rule")
 	}
+	lhs, err := seqRule(p)
+	if err != nil {
+		return nil, err
+	}
+	alt := []Rule{*lhs}
+	for token := p.peek(); token != nil; token = p.peek() {
+		if token.Kind != KIND_PIPE {
+			break
+		}
+		p.bump()
+		rule, err := seqRule(p)
+		if err != nil {
+			return nil, err
+		}
+		alt = append(alt, *rule)
+	}
+	if len(alt) == 1 {
+		return &alt[0], nil
+	}
+	return &Rule{
+		Alt: alt,
+	}, nil
+}
 
+func seqRule(p *Parser) (*Rule, error) {
+	lhs, err := atomRule(p)
+	if err != nil {
+		return nil, err
+	}
+
+	seq := []Rule{*lhs}
+	rule, err := optAtomRule(p)
+	if err != nil {
+		return nil, err
+	}
+	if rule != nil {
+		seq = append(seq, *rule)
+	}
+	if len(seq) == 1 {
+		return &seq[0], nil
+	}
+	return &Rule{
+		Seq: seq,
+	}, nil
+}
+
+func atomRule(p *Parser) (*Rule, error) {
+	rule, err := optAtomRule(p)
+	if err != nil {
+		return nil, err
+	}
+	if rule == nil {
+		return nil, errors.New("unexpected token")
+	}
+	return rule, nil
+}
+
+func optAtomRule(p *Parser) (*Rule, error) {
+	token := p.peek()
+	if token == nil {
+		return nil, nil
+	}
+	var tmp *Rule
+	var err error
+	switch token.Kind {
+	case KIND_NODE:
+		lookAhead := p.peekN(1)
+		if lookAhead != nil {
+			switch lookAhead.Kind {
+			case KIND_EQ:
+				return nil, nil
+			case KIND_COLON:
+				label := token.Value
+				p.bump()
+				p.bump()
+				rule, err := atomRule(p)
+				if err != nil {
+					return nil, err
+				}
+				return &Rule{
+					Labeled: &LabelRule{
+						label, *rule,
+					},
+				}, nil
+			}
+		}
+		p.bump()
+		node := p.internNode(token.Value)
+		tmp = &Rule{
+			Node: &node,
+		}
+	case KIND_TOKEN:
+		p.bump()
+		t := p.internToken(token.Value)
+		tmp = &Rule{
+			Token: &t,
+		}
+	case KIND_LPAREN:
+		p.bump()
+		tmp, err = rule(p)
+		if err != nil {
+			return nil, err
+		}
+		err = p.expect(KIND_RPAREN)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, nil
+	}
+
+	token = p.peek()
+	if token != nil {
+		switch token.Kind {
+		case KIND_QMARK:
+			p.bump()
+			tmp = &Rule{
+				Opt: tmp,
+			}
+		case KIND_STAR:
+			p.bump()
+			tmp = &Rule{
+				Rep: tmp,
+			}
+		}
+	}
+	return tmp, nil
 }
