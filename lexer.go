@@ -102,6 +102,7 @@ func Advance(input *string) Token {
 		}
 	}
 	b := (*input)[0]
+	*input = (*input)[1:]
 	switch b {
 	case '=':
 		return Token{
@@ -183,11 +184,8 @@ func next(s *string) *byte {
 	if s == nil || len(*s) == 0 {
 		return nil
 	}
-	*s = (*s)[1:]
-	if len(*s) == 0 {
-		return nil
-	}
 	b := (*s)[0]
+	*s = (*s)[1:]
 	return &b
 }
 
