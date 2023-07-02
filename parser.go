@@ -45,7 +45,7 @@ func (p *Parser) bump() (*Token, error) {
 		p.tokens = p.tokens[1:]
 		return &tmp, nil
 	}
-	return nil, errors.New("Unexpected EOF")
+	return nil, errors.New("unexpected EOF")
 }
 
 func (p *Parser) expect(kind Kind) error {
@@ -64,11 +64,11 @@ func (p *Parser) isEOF() bool {
 }
 
 func (p *Parser) finish() (*Grammar, error) {
-	// for _, nodeData := range p.grammar.nodes {
-	// 	// if nodeData.Rule.IsDummy() {
-	// 	// 	return nil, fmt.Errorf("unexpected node: %s", nodeData.Name)
-	// 	// }
-	// }
+	for _, nodeData := range p.grammar.Nodes {
+		if nodeData.Rule.IsDummy() {
+			// return nil, fmt.Errorf("unexpected node: %s", nodeData.Name)
+		}
+	}
 	return &p.grammar, nil
 }
 
@@ -77,7 +77,7 @@ func (p *Parser) internNode(name string) RuleNode {
 		return node
 	}
 	node := RuleNode(len(p.nodeTable))
-	p.grammar.nodes = append(p.grammar.nodes, NodeData{
+	p.grammar.Nodes = append(p.grammar.Nodes, NodeData{
 		Name: name,
 		Rule: DUMMY_RULE,
 	})
@@ -90,7 +90,7 @@ func (p *Parser) internToken(name string) RuleToken {
 		return token
 	}
 	token := RuleToken(len(p.tokenTable))
-	p.grammar.tokens = append(p.grammar.tokens, TokenData{name})
+	p.grammar.Tokens = append(p.grammar.Tokens, TokenData{name})
 	p.tokenTable[name] = token
 	return token
 }
@@ -118,7 +118,7 @@ func node(p *Parser) error {
 	if err != nil {
 		return err
 	}
-	p.grammar.nodes[node].Rule = *rule
+	p.grammar.Nodes[node].Rule = *rule
 	return nil
 }
 

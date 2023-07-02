@@ -57,7 +57,7 @@ type Token struct {
 }
 
 func (t Token) String() string {
-	return fmt.Sprintf("Kind: %s: %s", t.Kind.String(), t.Value)
+	return fmt.Sprintf("[%s]: %s", t.Kind.String(), t.Value)
 }
 
 func (t Token) IsValid() bool {

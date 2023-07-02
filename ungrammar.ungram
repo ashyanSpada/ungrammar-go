@@ -1,16 +1,2 @@
 /// ungrammar for ungrammar
-Grammar =
-  Node *
-
-Node =
-  name:'ident' '=' Rule
-
-Rule =
-  'ident'
-| 'token_ident'
-| Rule *
-| Rule ( '|' Rule) *
-| Rule '?'
-| Rule '*'
-| '(' Rule ')'
-| label:'ident' ':' Rule
+Rule = 'ident' ('|' Rule)

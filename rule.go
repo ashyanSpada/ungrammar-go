@@ -14,16 +14,16 @@ type TokenData struct {
 }
 
 type Grammar struct {
-	nodes  []NodeData
-	tokens []TokenData
+	Nodes  []NodeData
+	Tokens []TokenData
 }
 
 func (g Grammar) Node(node RuleNode) NodeData {
-	return g.nodes[node]
+	return g.Nodes[node]
 }
 
 func (g Grammar) Token(token RuleToken) TokenData {
-	return g.tokens[token]
+	return g.Tokens[token]
 }
 
 type LabelRule struct {
