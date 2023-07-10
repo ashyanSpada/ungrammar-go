@@ -165,8 +165,8 @@ func Advance(input *string) Token {
 		if isIdent(b) {
 			var buf []byte
 			buf = append(buf, b)
-			for nextByte := next(input); nextByte != nil && isIdent(*nextByte); nextByte = next(input) {
-				buf = append(buf, *nextByte)
+			for peekByte := peek(input); peekByte != nil && isIdent(*peekByte); peekByte = peek(input) {
+				buf = append(buf, *next(input))
 			}
 			return Token{
 				Kind:  KIND_NODE,
@@ -186,6 +186,14 @@ func next(s *string) *byte {
 	}
 	b := (*s)[0]
 	*s = (*s)[1:]
+	return &b
+}
+
+func peek(s *string) *byte {
+	if s == nil || len(*s) == 0 {
+		return nil
+	}
+	b := (*s)[0]
 	return &b
 }
 

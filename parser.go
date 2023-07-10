@@ -152,18 +152,24 @@ func rule(p *Parser) (*Rule, error) {
 }
 
 func seqRule(p *Parser) (*Rule, error) {
-	lhs, err := atomRule(p)
+	var rule *Rule
+	var err error
+	rule, err = atomRule(p)
 	if err != nil {
 		return nil, err
 	}
 
-	seq := []Rule{*lhs}
-	rule, err := optAtomRule(p)
-	if err != nil {
-		return nil, err
-	}
-	if rule != nil {
-		seq = append(seq, *rule)
+	seq := []Rule{*rule}
+	for {
+		rule, err = optAtomRule(p)
+		if err != nil {
+			return nil, err
+		}
+		if rule != nil {
+			seq = append(seq, *rule)
+		} else {
+			break
+		}
 	}
 	if len(seq) == 1 {
 		return &seq[0], nil

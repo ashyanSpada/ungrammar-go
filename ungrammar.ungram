@@ -1,2 +1,2 @@
 /// ungrammar for ungrammar
-Rule = 'ident' ('|' Rule)
+Rule = 'ident' '|' Rule
