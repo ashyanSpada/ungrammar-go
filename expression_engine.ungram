@@ -1,0 +1,8 @@
+
+BoolExpression= 'true' | 'false' | 'True' | 'False'
+
+Expression= BoolExpression | ListExpression | MapExpression
+
+ListExression= '[' (Expression',')* ']'
+
+MapExression= '{' (Expression':'Expression)* '}'

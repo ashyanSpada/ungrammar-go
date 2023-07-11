@@ -10,7 +10,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	data, err := ioutil.ReadFile("./ungrammar.ungram")
+	data, err := ioutil.ReadFile("./expression_engine.ungram")
 	assert.Nil(t, err)
 	tokens := Tokenize(string(data))
 	// fmt.Println(tokens)
