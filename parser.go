@@ -66,7 +66,7 @@ func (p *Parser) isEOF() bool {
 func (p *Parser) finish() (*Grammar, error) {
 	for _, nodeData := range p.grammar.Nodes {
 		if nodeData.Rule.IsDummy() {
-			// return nil, fmt.Errorf("unexpected node: %s", nodeData.Name)
+			return nil, fmt.Errorf("unexpected node: %s", nodeData.Name)
 		}
 	}
 	return &p.grammar, nil

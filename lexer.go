@@ -69,7 +69,7 @@ type Location struct {
 	Column int
 }
 
-func (l Location) Advance(input string) {
+func (l *Location) Advance(input string) {
 	index := strings.IndexByte(input, '\n')
 	if index == -1 {
 		l.Column += len(input)
@@ -197,14 +197,6 @@ func peek(s *string) *byte {
 	return &b
 }
 
-func isEscapable(b byte) bool {
-	return b == '\\' || b == '\''
-}
-
-func isWhitespace(b byte) bool {
-	return b == ' ' || b == '\t' || b == '\n'
-}
-
 func isIdent(b byte) bool {
 	return (b == '_') || (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
 }
@@ -217,7 +209,12 @@ func skipComment(s *string) {
 	if s == nil {
 		return
 	}
-	if strings.HasPrefix(*s, "//") {
+	// maybe there are multiple lines of comments
+	for {
+		*s = strings.TrimSpace(*s)
+		if !strings.HasPrefix(*s, "//") {
+			break
+		}
 		index := strings.IndexByte(*s, '\n')
 		if index == -1 {
 			index = len(*s) - 1

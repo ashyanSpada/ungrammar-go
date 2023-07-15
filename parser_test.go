@@ -3,14 +3,14 @@ package ungrammar
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParse(t *testing.T) {
-	data, err := ioutil.ReadFile("./expression_engine.ungram")
+	data, err := os.ReadFile("./rust.ungram")
 	assert.Nil(t, err)
 	tokens := Tokenize(string(data))
 	// fmt.Println(tokens)

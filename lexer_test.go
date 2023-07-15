@@ -1,7 +1,6 @@
 package ungrammar
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,8 +23,15 @@ func TestTokenize(t *testing.T) {
 	assert.Equal(t, ans[10], Token{KIND_NODE, "Rule"})
 }
 
-func TestAdvance(T *testing.T) {
-	input := "Grammer"
-	ans := Advance(&input)
-	fmt.Println(ans)
+func TestSkipComment(t *testing.T) {
+	s := "//hahahaha  "
+	skipComment(&s)
+	assert.Equal(t, s, "")
+	s = "//jajjajjaja\nhaha"
+	skipComment(&s)
+	assert.Equal(t, s, "haha")
+	// multiple comments
+	s = "  //jajajaja\n  //dsfadsfdsa\nhha"
+	skipComment(&s)
+	assert.Equal(t, s, "hha")
 }
