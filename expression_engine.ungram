@@ -1,8 +1,18 @@
 
-BoolExpression= 'true' | 'false' | 'True' | 'False'
+Literal = 'variable' | 'number' | 'string' | 'true' | 'false'
 
-Expression= BoolExpression | ListExpression | MapExpression
+Expr= ListExpr | MapExpr | Literal | BinaryExpr | UnaryExpr | TernaryExpr
 
-ListExression= '[' (Expression',')* ']'
+ListExpr= '[' ((Expr',')* Expr)? ']'
 
-MapExression= '{' (Expression':'Expression)* '}'
+MapExpr= '{' ((Expr ':' Expr ',' )* Expr)? '}'
+
+FuncExpr= 'variable' '(' ((Expr',')*Expr)? ')'
+
+ChainExpr = (Expr ';')*Expr
+
+BinaryExpr = lhs:Expr 'op' rhs:Expr
+
+UnaryExpr = 'op' Expr
+
+TernaryExpr = Expr '?' Expr ':' Expr
